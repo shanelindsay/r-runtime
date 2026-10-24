@@ -8,20 +8,29 @@ GitHub Releases, keeping this repository small.
 
 This repository and its releases are private. The session needs authenticated
 GitHub CLI (`gh`) access to `shanelindsay/r-runtime`, plus Bash, tar and sha256sum.
-Clone this small repository, then run:
+In a fresh session, run:
 
 ```bash
-bash setup.sh
+gh repo clone shanelindsay/r-runtime /tmp/r-runtime-tools
+bash /tmp/r-runtime-tools/setup.sh
 export PATH="$HOME/.local/share/r-runtime/v0.1.0/bin:$PATH"
 Rscript -e 'library(ggplot2); print(packageVersion("ggplot2"))'
 ```
 
-Use those two setup lines in the cloud environment's startup script after cloning.
+Use the clone, setup and PATH lines in the cloud environment's startup script.
 An installation is reusable within that session; run setup once. R and Rscript
 work from any project directory. Use an absolute path to setup.sh if necessary.
 For another installation directory, pass it as the first argument. To select a
 release, set `R_RUNTIME_VERSION` (default: `v0.1.0`). Existing destinations are
 preserved; use their commands directly or choose a new destination.
+
+## Size and startup time
+
+Release v0.1.0 is 211,832,710 bytes (212 MB / 202 MiB). A GitHub-hosted Ubuntu
+24.04 runner downloaded, verified, extracted and loaded R plus ggplot2 in **8.1
+seconds**. Extraction alone took **2.4 seconds** in a local clean Ubuntu container.
+The source bundle took about three minutes to download over the local connection;
+cloud/network performance varies. These measurements are from 24 October 2026.
 
 ## Contents and requirements
 
