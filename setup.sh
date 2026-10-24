@@ -6,7 +6,7 @@ case "$(uname -s):$(uname -m)" in
   Linux:x86_64) ;;
   *) echo 'This release requires Linux x86-64 with glibc.' >&2; exit 1 ;;
 esac
-for command in gh tar sha256sum; do
+for command in curl tar sha256sum; do
   command -v "$command" >/dev/null || { echo "Required command: $command" >&2; exit 1; }
 done
 if [[ -e "$destination" ]]; then
@@ -18,7 +18,9 @@ destination="$(cd "$(dirname "$destination")" && pwd)/$(basename "$destination")
 stage="$(mktemp -d "$(dirname "$destination")/.r-runtime.XXXXXX")"
 trap 'rm -rf "$stage"' EXIT
 archive=r-runtime-linux-x86_64.tar.gz
-gh release download "$version" --repo shanelindsay/r-runtime --pattern "$archive" --pattern SHA256SUMS --dir "$stage"
+release_url="https://github.com/shanelindsay/r-runtime/releases/download/$version"
+curl -fL "$release_url/$archive" -o "$stage/$archive"
+curl -fL "$release_url/SHA256SUMS" -o "$stage/SHA256SUMS"
 (cd "$stage" && sha256sum --check SHA256SUMS)
 mkdir "$stage/runtime"
 tar -xzf "$stage/$archive" -C "$stage/runtime"

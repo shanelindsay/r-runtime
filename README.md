@@ -6,18 +6,18 @@ GitHub Releases, keeping this repository small.
 
 ## Set up
 
-This repository and its releases are private. The session needs authenticated
-GitHub CLI (`gh`) access to `shanelindsay/r-runtime`, plus Bash, tar and sha256sum.
-In a fresh session, run:
+The repository and release downloads are public. Setup needs Bash, curl, tar and
+sha256sum. In a fresh local or cloud Ubuntu 24.04 x86-64 session, run:
 
 ```bash
-gh repo clone shanelindsay/r-runtime /tmp/r-runtime-tools
-bash /tmp/r-runtime-tools/setup.sh
+curl -fsSL https://raw.githubusercontent.com/shanelindsay/r-runtime/main/setup.sh -o /tmp/setup-r-runtime.sh
+bash /tmp/setup-r-runtime.sh
 export PATH="$HOME/.local/share/r-runtime/v0.1.0/bin:$PATH"
 Rscript -e 'library(ggplot2); print(packageVersion("ggplot2"))'
 ```
 
-Use the clone, setup and PATH lines in the cloud environment's startup script.
+Use the download, setup and PATH lines in the cloud environment's startup script.
+No GitHub account, token, Git clone or GitHub CLI is needed for installation.
 An installation is reusable within that session; run setup once. R and Rscript
 work from any project directory. Use an absolute path to setup.sh if necessary.
 For another installation directory, pass it as the first argument. To select a

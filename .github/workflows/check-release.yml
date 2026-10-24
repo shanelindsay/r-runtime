@@ -12,9 +12,8 @@ jobs:
       - uses: actions/checkout@v6
       - name: Download, verify and run R
         env:
-          GH_TOKEN: ${{ github.token }}
           R_RUNTIME_VERSION: ${{ github.event.release.tag_name || 'v0.1.0' }}
         run: |
-          time bash setup.sh "$RUNNER_TEMP/r-runtime"
+          time env -u GH_TOKEN -u GITHUB_TOKEN bash setup.sh "$RUNNER_TEMP/r-runtime"
           cd /tmp
           "$RUNNER_TEMP/r-runtime/bin/Rscript" "$GITHUB_WORKSPACE/scripts/smoke.R"
