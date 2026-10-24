@@ -31,7 +31,9 @@ forcats, here, yaml, lubridate, janitor, testthat, knitr, rmarkdown, broom and
 patchwork, plus dependencies. The release's PACKAGE-MANIFEST.tsv records exact
 versions; BUILD-INFO.txt records its original build provenance.
 
-Linux x86-64 with glibc is required. The existing build expects
+Ubuntu 24.04 x86-64 is the tested platform. The archive includes supporting
+shared libraries and DejaVu fonts; no apt installation is required to run it.
+Other Linux glibc systems have not been validated. The existing build expects
 `/opt/R/4.6.1-glibc`: its launcher creates a symlink using root permissions or
 passwordless sudo. Containers which forbid this are currently unsupported.
 The initial release retains this known requirement to keep the first version
@@ -47,6 +49,12 @@ Start from an extracted portable bundle containing its runtime, package library,
 package lists and validation scripts. Build and test before publishing:
 
 ```bash
+# On an Ubuntu 24.04 builder, install the supporting libraries once:
+sudo apt-get update
+sudo apt-get install -y libfontconfig1 libfreetype6 libfribidi0 libharfbuzz0b \
+  libicu74 libjpeg-turbo8 libpng16-16t64 libtiff6 libuv1t64 libwebp7 \
+  libwebpmux3 fonts-dejavu-core
+bash scripts/bundle-system-libs.sh /path/to/extracted-bundle
 bash scripts/build-release.sh /path/to/extracted-bundle
 gh release create v0.1.0 dist/r-runtime-linux-x86_64.tar.gz dist/SHA256SUMS \
   --repo shanelindsay/r-runtime --title 'Portable R v0.1.0' --notes-file release-notes.md
