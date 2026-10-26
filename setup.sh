@@ -35,4 +35,17 @@ EOF
   chmod +x "$destination/bin/$program"
 done
 "$destination/bin/Rscript" -e 'library(ggplot2); cat(R.version.string, "\n"); print(packageVersion("ggplot2"))'
-printf 'Ready. Add this directory to PATH: %s/bin\n' "$destination"
+
+# Add checksum-pinned Quarto, bundled Pandoc/Typst, micromamba and the
+# per-project APAQUARTO installer. When setup.sh was downloaded on its own,
+# fetch the companion tool script from the same public repository.
+script_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
+tools_script="$script_dir/scripts/install-tools.sh"
+if [[ ! -f "$tools_script" ]]; then
+  tools_script="$stage/install-tools.sh"
+  curl -fL --retry 2 \
+    "https://raw.githubusercontent.com/shanelindsay/r-runtime/main/scripts/install-tools.sh" \
+    -o "$tools_script"
+fi
+bash "$tools_script" "$destination"
+printf 'R and research tools ready. Add this directory to PATH: %s/bin\n' "$destination"

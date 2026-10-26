@@ -1,5 +1,11 @@
 name: Check release installation
 on:
+  push:
+    branches: [main]
+    paths:
+      - setup.sh
+      - "scripts/**"
+      - ".github/workflows/check-release.yml"
   workflow_dispatch:
   release:
     types: [published]
@@ -10,10 +16,13 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
-      - name: Download, verify and run R
+      - name: Download, verify and install research tools
         env:
           R_RUNTIME_VERSION: ${{ github.event.release.tag_name || 'v0.1.0' }}
         run: |
           time env -u GH_TOKEN -u GITHUB_TOKEN bash setup.sh "$RUNNER_TEMP/r-runtime"
+      - name: Smoke test R and pinned document tools
+        run: |
           cd /tmp
           "$RUNNER_TEMP/r-runtime/bin/Rscript" "$GITHUB_WORKSPACE/scripts/smoke.R"
+          bash "$GITHUB_WORKSPACE/scripts/smoke-tools.sh" "$RUNNER_TEMP/r-runtime"
