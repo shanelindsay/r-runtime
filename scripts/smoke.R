@@ -1,3 +1,9 @@
+# Exercise paths that used to fail before default packages could initialise.
+stopifnot(nzchar(Sys.which("uname")), system("true") == 0L)
+f <- tempfile(fileext = ".rds")
+saveRDS(data.frame(x = 1:3), f)
+stopifnot(identical(readRDS(f)$x, 1:3))
+unlink(f)
 library(ggplot2)
 library(dplyr)
 library(testthat)
@@ -14,3 +20,8 @@ print(p)
 dev.off()
 stopifnot(file.info(f)$size > 0)
 cat(R.version.string, "\nData manipulation and PNG/SVG plotting passed.\n")
+
+# A child Rscript must inherit the same relocatable launcher configuration.
+status <- system2(file.path(Sys.getenv("RHOME"), "bin", "R"),
+                  c("--vanilla", "--slave", "-e", shQuote("library(ggplot2); stopifnot(nzchar(Sys.which('uname')))")))
+stopifnot(status == 0L)

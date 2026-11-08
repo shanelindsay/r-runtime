@@ -32,7 +32,18 @@ project directory.
 The default R release remains `v0.1.0`; select a different published release
 with `R_RUNTIME_VERSION` or pass an installation directory as the first
 argument. The setup preserves existing destinations instead of overwriting
-them. To **add the tools to an existing R installation** without downloading R
+them. To repair a previously extracted bundle without downloading it again,
+run from this checkout:
+
+```bash
+cp scripts/use-portable-r.sh /path/to/runtime/dev/use-portable-r.sh
+bash scripts/prepare-runtime.sh /path/to/runtime
+/path/to/runtime/bin/Rscript --vanilla scripts/smoke.R
+```
+
+The preparation step is safe to rerun and leaves your R user and site profiles
+available. It corrects the base tools path before default packages load, even
+with `--vanilla`. To **add the tools to an existing R installation** without downloading R
 again, use:
 
 ```bash
@@ -65,10 +76,13 @@ versions; BUILD-INFO.txt records its original build provenance.
 
 Ubuntu 24.04 x86-64 is the tested platform. The archive includes supporting
 shared libraries and DejaVu fonts; no apt installation is required to run it.
-Other Linux glibc systems have not been validated. The existing build expects
-`/opt/R/4.6.1-glibc`: its launcher creates a symlink using root permissions or
-passwordless sudo. Containers which forbid this are currently unsupported.
-The original R release retains this known requirement. The setup script
+Other Linux glibc systems have not been validated. The installer relocates the original build's launcher and base tools path into
+its installation directory. No root access, sudo or `/opt/R` symlink is required,
+including when running `Rscript --vanilla`. The immutable release archive is
+checksum-verified before these local configuration changes are applied. The
+installed directory can also be moved: the launchers resolve their paths at
+runtime. Debian 13 x86-64 has additionally been tested for R package loading,
+RDS I/O and PNG/SVG plotting. The setup script
 installs the additional command-line tools **outside** the immutable R release
 archive:
 

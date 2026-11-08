@@ -4,7 +4,8 @@ set -euo pipefail
 [[ $# == 1 ]] || { echo "Usage: $0 <extracted-bundle>" >&2; exit 2; }
 source_dir="$(cd "$1" && pwd)"
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cp "$repo/scripts/use-portable-r.sh" "$source_dir/dev/"
+cp "$repo/scripts/use-portable-r.sh" "$repo/scripts/prepare-runtime.sh" "$source_dir/dev/"
+bash "$source_dir/dev/prepare-runtime.sh" "$source_dir"
 cp "$repo/scripts/fonts.conf" "$source_dir/dev/fontconfig/"
 [[ -d "$source_dir/dev/system-libs" ]] || { echo "Run scripts/bundle-system-libs.sh first" >&2; exit 1; }
 [[ -d "$source_dir/dev/portable-r-library" ]] || { echo 'Package library missing' >&2; exit 1; }

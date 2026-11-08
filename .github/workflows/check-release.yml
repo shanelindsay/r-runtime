@@ -6,6 +6,11 @@ on:
       - setup.sh
       - "scripts/**"
       - ".github/workflows/check-release.yml"
+  pull_request:
+    paths:
+      - setup.sh
+      - "scripts/**"
+      - ".github/workflows/check-release.yml"
   workflow_dispatch:
   release:
     types: [published]
@@ -20,9 +25,18 @@ jobs:
         env:
           R_RUNTIME_VERSION: ${{ github.event.release.tag_name || 'v0.1.0' }}
         run: |
-          time env -u GH_TOKEN -u GITHUB_TOKEN bash setup.sh "$RUNNER_TEMP/r-runtime"
+          # Hosted runners can grant their user write access to /opt. Make
+          # the test match restricted cloud sessions before dropping elevation.
+          sudo chown root:root /opt
+          sudo chmod 0755 /opt
+          test ! -w /opt
+          test ! -e /opt/R/4.6.1-glibc
+          time env -u GH_TOKEN -u GITHUB_TOKEN setpriv --no-new-privs bash setup.sh "$RUNNER_TEMP/r-runtime fresh"
       - name: Smoke test R and pinned document tools
         run: |
           cd /tmp
-          "$RUNNER_TEMP/r-runtime/bin/Rscript" "$GITHUB_WORKSPACE/scripts/smoke.R"
-          bash "$GITHUB_WORKSPACE/scripts/smoke-tools.sh" "$RUNNER_TEMP/r-runtime"
+          "$RUNNER_TEMP/r-runtime fresh/bin/Rscript" --vanilla "$GITHUB_WORKSPACE/scripts/smoke.R"
+          bash "$GITHUB_WORKSPACE/scripts/prepare-runtime.sh" "$RUNNER_TEMP/r-runtime fresh"
+          mv "$RUNNER_TEMP/r-runtime fresh" "$RUNNER_TEMP/r-runtime moved"
+          "$RUNNER_TEMP/r-runtime moved/bin/Rscript" --vanilla "$GITHUB_WORKSPACE/scripts/smoke.R"
+          bash "$GITHUB_WORKSPACE/scripts/smoke-tools.sh" "$RUNNER_TEMP/r-runtime moved"
