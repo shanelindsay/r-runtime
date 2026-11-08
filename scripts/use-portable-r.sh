@@ -24,24 +24,9 @@ case "$PROGRAM" in
     ;;
 esac
 
-# This R build has /opt/R/4.6.1-glibc as its compiled-in prefix.
-# Create the expected path when this container permits it.
-if [[ ! -e /opt/R/4.6.1-glibc ]]; then
-  mkdir -p /opt/R 2>/dev/null || true
-  ln -s "$R_PREFIX" /opt/R/4.6.1-glibc 2>/dev/null || true
-fi
-
-# GitHub-hosted runners usually require passwordless sudo for /opt, whereas
-# ChatGPT containers commonly run as root. Support either without prompting.
-if [[ ! -e /opt/R/4.6.1-glibc ]] && command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
-  sudo mkdir -p /opt/R
-  sudo ln -s "$R_PREFIX" /opt/R/4.6.1-glibc
-fi
-
-if [[ ! -e /opt/R/4.6.1-glibc ]]; then
-  echo "Portable R needs /opt/R/4.6.1-glibc, or a symlink to $R_PREFIX" >&2
-  exit 1
-fi
+# Rscript uses RHOME to find its R launcher. The entry launcher delegates
+# back here so both commands share the relocated environment.
+export RHOME="$REPO_ROOT/dev/r-entry"
 
 # Package-bearing portable bundles place their non-base packages here. During
 # build and validation, isolate the bundle from any host R libraries so missing
@@ -58,4 +43,7 @@ if [[ -d "$PORTABLE_LIBRARY" ]]; then
   fi
 fi
 
-exec "$R_PREFIX/bin/$PROGRAM" "$@"
+if [[ "$PROGRAM" == R ]]; then
+  exec "$R_PREFIX/bin/R" "$@"
+fi
+exec "$R_PREFIX/bin/Rscript" "$@"

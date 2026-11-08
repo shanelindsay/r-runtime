@@ -25,16 +25,19 @@ curl -fL "$release_url/SHA256SUMS" -o "$stage/SHA256SUMS"
 mkdir "$stage/runtime"
 tar -xzf "$stage/$archive" -C "$stage/runtime"
 mv "$stage/runtime" "$destination"
-mkdir -p "$destination/bin"
-for program in R Rscript; do
-  cat > "$destination/bin/$program" <<EOF
-#!/usr/bin/env bash
-root="\$(cd -- "\$(dirname -- "\${BASH_SOURCE[0]}")/.." && pwd)"
-exec bash "\$root/dev/use-portable-r.sh" $program "\$@"
-EOF
-  chmod +x "$destination/bin/$program"
+# Use current launchers even when installing an older immutable archive.
+script_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
+for helper in use-portable-r.sh prepare-runtime.sh; do
+  if [[ -f "$script_dir/scripts/$helper" ]]; then
+    cp "$script_dir/scripts/$helper" "$destination/dev/$helper"
+  else
+    curl -fL --retry 2 \
+      "https://raw.githubusercontent.com/shanelindsay/r-runtime/main/scripts/$helper" \
+      -o "$destination/dev/$helper"
+  fi
 done
-"$destination/bin/Rscript" -e 'library(ggplot2); cat(R.version.string, "\n"); print(packageVersion("ggplot2"))'
+bash "$destination/dev/prepare-runtime.sh" "$destination"
+"$destination/bin/Rscript" --vanilla -e 'library(ggplot2); cat(R.version.string, "\n"); print(packageVersion("ggplot2"))'
 
 # Add checksum-pinned Quarto, bundled Pandoc/Typst, micromamba and the
 # per-project APAQUARTO installer. When setup.sh was downloaded on its own,
