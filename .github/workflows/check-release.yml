@@ -6,6 +6,11 @@ on:
       - setup.sh
       - "scripts/**"
       - ".github/workflows/check-release.yml"
+  pull_request:
+    paths:
+      - setup.sh
+      - "scripts/**"
+      - ".github/workflows/check-release.yml"
   workflow_dispatch:
   release:
     types: [published]
